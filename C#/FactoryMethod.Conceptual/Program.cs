@@ -1,83 +1,74 @@
 ﻿// Factory Method Design Pattern
 //
-// Intent: Provides an interface for creating objects in a superclass, but
-// allows subclasses to alter the type of objects that will be created.
+// Intención: Proporciona una interfaz para crear objetos en una superclase, pero
+// permite que las subclases alteren el tipo de objetos que se crearán.
 
 using System;
 
 namespace RefactoringGuru.DesignPatterns.FactoryMethod.Conceptual
 {
-    // The Creator class declares the factory method that is supposed to return
-    // an object of a Product class. The Creator's subclasses usually provide
-    // the implementation of this method.
-    abstract class Creator
+    // La clase Creador declara el método de fábrica que debe devolver un objeto de la clase Transporte (Producto).
+    // Las subclases de Creador suelen proporcionar la implementación de este método.
+    abstract class LogisticaCreator
     {
-        // Note that the Creator may also provide some default implementation of
-        // the factory method.
-        public abstract IProduct FactoryMethod();
+        // Tenga en cuenta que el Creador también puede proporcionar alguna implementación predeterminada del método de fábrica.
+        public abstract ITransporte CrearTransporte();
 
-        // Also note that, despite its name, the Creator's primary
-        // responsibility is not creating products. Usually, it contains some
-        // core business logic that relies on Product objects, returned by the
-        // factory method. Subclasses can indirectly change that business logic
-        // by overriding the factory method and returning a different type of
-        // product from it.
+        // Tenga en cuenta también que, a pesar de su nombre, la responsabilidad principal del Creador no es crear productos.
+        // Normalmente, contiene cierta lógica de negocio central que se basa en objetos Producto, devueltos por el método de fábrica.
+        // Las subclases pueden cambiar indirectamente esa lógica de negocio sobrescribiendo el método de fábrica y 
+        // devolviendo un tipo de producto diferente.
         public string SomeOperation()
         {
-            // Call the factory method to create a Product object.
-            var product = FactoryMethod();
-            // Now, use the product.
-            var result = "Creator: The same creator's code has just worked with "
-                + product.Operation();
+            // Llame al método de fábrica para crear un objeto Transporte (Producto).
+            var product = CrearTransporte();
+            //Ahora, utiliza el producto.
+            var result = $"Creator: El mismo código del creador acaba de funcionar con el {product.Operation()}";
 
             return result;
         }
     }
 
-    // Concrete Creators override the factory method in order to change the
-    // resulting product's type.
-    class ConcreteCreator1 : Creator
+    // Los creadores sobreescriben el método para cambiar el tipo del producto resultante.
+    class LogisticaTerrestre : LogisticaCreator
     {
-        // Note that the signature of the method still uses the abstract product
-        // type, even though the concrete product is actually returned from the
-        // method. This way the Creator can stay independent of concrete product
-        // classes.
-        public override IProduct FactoryMethod()
+        // Tenga en cuenta que la firma del método sigue utilizando el tipo de producto abstracto, 
+        // aunque el producto concreto se devuelve desde el método. De esta forma, el Creador puede 
+        // mantenerse independiente de las clases de producto concreto.
+        public override ITransporte CrearTransporte()
         {
-            return new ConcreteProduct1();
+            return new Camion();
         }
     }
 
-    class ConcreteCreator2 : Creator
+    class LogisticaMaritima : LogisticaCreator
     {
-        public override IProduct FactoryMethod()
+        public override ITransporte CrearTransporte()
         {
-            return new ConcreteProduct2();
+            return new Barco();
         }
     }
 
-    // The Product interface declares the operations that all concrete products
-    // must implement.
-    public interface IProduct
+    // La interfaz del producto declara las operaciones que todos los productos concretos deben implementar.
+    public interface ITransporte
     {
         string Operation();
     }
 
-    // Concrete Products provide various implementations of the Product
-    // interface.
-    class ConcreteProduct1 : IProduct
+    // Los productos concretos ofrecen diversas implementaciones de la interfaz del producto.
+    class Camion : ITransporte
     {
         public string Operation()
         {
-            return "{Result of ConcreteProduct1}";
+            return "{Transporte en Camión}";
         }
     }
 
-    class ConcreteProduct2 : IProduct
+    class Barco : ITransporte
     {
         public string Operation()
         {
-            return "{Result of ConcreteProduct2}";
+            return "{Transporte en Barco}";
         }
     }
 
@@ -85,24 +76,23 @@ namespace RefactoringGuru.DesignPatterns.FactoryMethod.Conceptual
     {
         public void Main()
         {
-            Console.WriteLine("App: Launched with the ConcreteCreator1.");
-            ClientCode(new ConcreteCreator1());
+            Console.WriteLine("Aplicación: lanzada con ConcreteCreator1.");
+            ClientCode(new LogisticaTerrestre());
             
             Console.WriteLine("");
 
-            Console.WriteLine("App: Launched with the ConcreteCreator2.");
-            ClientCode(new ConcreteCreator2());
+            Console.WriteLine("Aplicación: lanzada con ConcreteCreator2.");
+            ClientCode(new LogisticaMaritima());
         }
 
-        // The client code works with an instance of a concrete creator, albeit
-        // through its base interface. As long as the client keeps working with
-        // the creator via the base interface, you can pass it any creator's
-        // subclass.
-        public void ClientCode(Creator creator)
+        // El código del cliente funciona con una instancia de un creador concreto, 
+        // aunque a través de su interfaz base. Mientras el cliente siga trabajando 
+        // con el creador a través de la interfaz base, puede pasarle cualquier subclase del creador.
+        public void ClientCode(LogisticaCreator creator)
         {
             // ...
-            Console.WriteLine("Client: I'm not aware of the creator's class," +
-                "but it still works.\n" + creator.SomeOperation());
+            Console.WriteLine("Cliente: No conozco la clase del creador," +
+                "pero aún funciona.\n" + creator.SomeOperation());
             // ...
         }
     }
