@@ -1,152 +1,152 @@
-﻿// Abstract Factory Design Pattern
+﻿// Patrón de Diseño Abstract Factory
 //
-// Intent: Lets you produce families of related objects without specifying their
-// concrete classes.
+// Propósito: Permite producir familias de objetos relacionados sin especificar sus
+// clases concretas.
 
 using System;
 
 namespace RefactoringGuru.DesignPatterns.AbstractFactory.Conceptual
 {
-    // The Abstract Factory interface declares a set of methods that return
-    // different abstract products. These products are called a family and are
-    // related by a high-level theme or concept. Products of one family are
-    // usually able to collaborate among themselves. A family of products may
-    // have several variants, but the products of one variant are incompatible
-    // with products of another.
-    public interface IAbstractFactory
+    // La interfaz Abstract Factory declara un conjunto de métodos que devuelven
+    // diferentes productos abstractos. Estos productos se llaman una familia y están
+    // relacionados por un tema o concepto de alto nivel. Los productos de una familia
+    // generalmente pueden colaborar entre sí. Una familia de productos puede
+    // tener varias variantes, pero los productos de una variante son incompatibles
+    // con los productos de otra.
+    public interface IAbstractGUIFactory
     {
-        IAbstractProductA CreateProductA();
+        IAbstractProductAButton CreateProductAButton();
 
-        IAbstractProductB CreateProductB();
+        IAbstractProductBCheckbox CreateProductBCheckbox();
     }
 
-    // Concrete Factories produce a family of products that belong to a single
-    // variant. The factory guarantees that resulting products are compatible.
-    // Note that signatures of the Concrete Factory's methods return an abstract
-    // product, while inside the method a concrete product is instantiated.
-    class ConcreteFactory1 : IAbstractFactory
+    // Las Fábricas Concretas producen una familia de productos que pertenecen a una sola
+    // variante. La fábrica garantiza que los productos resultantes sean compatibles.
+    // Tenga en cuenta que las firmas de los métodos de la Fábrica Concreta devuelven un
+    // producto abstracto, mientras que dentro del método se instancia un producto concreto.
+    class ConcreteFactory1Windows : IAbstractGUIFactory
     {
-        public IAbstractProductA CreateProductA()
+        public IAbstractProductAButton CreateProductAButton()
         {
-            return new ConcreteProductA1();
+            return new ConcreteProductA1WinButton();
         }
 
-        public IAbstractProductB CreateProductB()
+        public IAbstractProductBCheckbox CreateProductBCheckbox()
         {
-            return new ConcreteProductB1();
-        }
-    }
-
-    // Each Concrete Factory has a corresponding product variant.
-    class ConcreteFactory2 : IAbstractFactory
-    {
-        public IAbstractProductA CreateProductA()
-        {
-            return new ConcreteProductA2();
-        }
-
-        public IAbstractProductB CreateProductB()
-        {
-            return new ConcreteProductB2();
+            return new ConcreteProductB1WinCheckbox();
         }
     }
 
-    // Each distinct product of a product family should have a base interface.
-    // All variants of the product must implement this interface.
-    public interface IAbstractProductA
+    // Cada Fábrica Concreta tiene una variante de producto correspondiente.
+    class ConcreteFactory2MAC : IAbstractGUIFactory
+    {
+        public IAbstractProductAButton CreateProductAButton()
+        {
+            return new ConcreteProductA2MacButton();
+        }
+
+        public IAbstractProductBCheckbox CreateProductBCheckbox()
+        {
+            return new ConcreteProductB2MacCheckbox();
+        }
+    }
+
+    // Cada producto distinto de una familia de productos debe tener una interfaz base.
+    // Todas las variantes del producto deben implementar esta interfaz.
+    public interface IAbstractProductAButton
     {
         string UsefulFunctionA();
     }
 
-    // Concrete Products are created by corresponding Concrete Factories.
-    class ConcreteProductA1 : IAbstractProductA
+    // Los Productos Concretos son creados por las Fábricas Concretas correspondientes.
+    class ConcreteProductA1WinButton : IAbstractProductAButton
     {
         public string UsefulFunctionA()
         {
-            return "The result of the product A1.";
+            return "El resultado del producto A1: un botón de Windows.";
         }
     }
 
-    class ConcreteProductA2 : IAbstractProductA
+    class ConcreteProductA2MacButton : IAbstractProductAButton
     {
         public string UsefulFunctionA()
         {
-            return "The result of the product A2.";
+            return "El resultado del producto A2: un botón de Mac.";
         }
     }
 
-    // Here's the the base interface of another product. All products can
-    // interact with each other, but proper interaction is possible only between
-    // products of the same concrete variant.
-    public interface IAbstractProductB
+    // Aquí está la interfaz base de otro producto. Todos los productos pueden
+    // interactuar entre sí, pero la interacción adecuada solo es posible entre
+    // productos de la misma variante concreta.
+    public interface IAbstractProductBCheckbox
     {
-        // Product B is able to do its own thing...
+        // El Producto B puede hacer lo suyo...
         string UsefulFunctionB();
 
-        // ...but it also can collaborate with the ProductA.
+        // ...pero también puede colaborar con el ProductoA.
         //
-        // The Abstract Factory makes sure that all products it creates are of
-        // the same variant and thus, compatible.
-        string AnotherUsefulFunctionB(IAbstractProductA collaborator);
+        // La Abstract Factory se asegura de que todos los productos que crea sean de
+        // la misma variante y, por lo tanto, compatibles.
+        string AnotherUsefulFunctionB(IAbstractProductAButton collaborator);
     }
 
-    // Concrete Products are created by corresponding Concrete Factories.
-    class ConcreteProductB1 : IAbstractProductB
+    // Los Productos Concretos son creados por las Fábricas Concretas correspondientes.
+    class ConcreteProductB1WinCheckbox : IAbstractProductBCheckbox
     {
         public string UsefulFunctionB()
         {
-            return "The result of the product B1.";
+            return "El resultado del producto B1: un Checkbox de Windows.";
         }
 
-        // The variant, Product B1, is only able to work correctly with the
-        // variant, Product A1. Nevertheless, it accepts any instance of
-        // AbstractProductA as an argument.
-        public string AnotherUsefulFunctionB(IAbstractProductA collaborator)
+        // La variante, Producto B1, solo puede funcionar correctamente con la
+        // variante, Producto A1. Sin embargo, acepta cualquier instancia de
+        // AbstractProductA como argumento.
+        public string AnotherUsefulFunctionB(IAbstractProductAButton collaborator)
         {
             var result = collaborator.UsefulFunctionA();
 
-            return $"The result of the B1 collaborating with the ({result})";
+            return $"El resultado de B1 (un Checkbox de Windows) colaborando con ({result})";
         }
     }
 
-    class ConcreteProductB2 : IAbstractProductB
+    class ConcreteProductB2MacCheckbox : IAbstractProductBCheckbox
     {
         public string UsefulFunctionB()
         {
-            return "The result of the product B2.";
+            return "El resultado del producto B2: un Checkbox de Mac.";
         }
 
-       // The variant, Product B2, is only able to work correctly with the
-       // variant, Product A2. Nevertheless, it accepts any instance of
-       // AbstractProductA as an argument.
-        public string AnotherUsefulFunctionB(IAbstractProductA collaborator)
+       // La variante, Producto B2, solo puede funcionar correctamente con la
+       // variante, Producto A2. Sin embargo, acepta cualquier instancia de
+       // AbstractProductA como argumento.
+        public string AnotherUsefulFunctionB(IAbstractProductAButton collaborator)
         {
             var result = collaborator.UsefulFunctionA();
 
-            return $"The result of the B2 collaborating with the ({result})";
+            return $"El resultado de B2 (un Checkbox de Mac) colaborando con ({result})";
         }
     }
 
-    // The client code works with factories and products only through abstract
-    // types: AbstractFactory and AbstractProduct. This lets you pass any
-    // factory or product subclass to the client code without breaking it.
+    // El código del cliente trabaja con fábricas y productos solo a través de tipos
+    // abstractos: AbstractFactory y AbstractProduct. Esto le permite pasar cualquier
+    // subclase de fábrica o producto al código del cliente sin romperlo.
     class Client
     {
         public void Main()
         {
-            // The client code can work with any concrete factory class.
-            Console.WriteLine("Client: Testing client code with the first factory type...");
-            ClientMethod(new ConcreteFactory1());
+            // El código del cliente puede funcionar con cualquier clase de fábrica concreta.
+            Console.WriteLine("Cliente: Probando código del cliente con el primer tipo de fábrica: SO Windows");
+            ClientMethod(new ConcreteFactory1Windows());
             Console.WriteLine();
 
-            Console.WriteLine("Client: Testing the same client code with the second factory type...");
-            ClientMethod(new ConcreteFactory2());
+            Console.WriteLine("Cliente: Probando el mismo código del cliente con el segundo tipo de fábrica: SO MAC");
+            ClientMethod(new ConcreteFactory2MAC());
         }
 
-        public void ClientMethod(IAbstractFactory factory)
+        public void ClientMethod(IAbstractGUIFactory factory)
         {
-            var productA = factory.CreateProductA();
-            var productB = factory.CreateProductB();
+            var productA = factory.CreateProductAButton();
+            var productB = factory.CreateProductBCheckbox();
 
             Console.WriteLine(productB.UsefulFunctionB());
             Console.WriteLine(productB.AnotherUsefulFunctionB(productA));
