@@ -1,138 +1,179 @@
-﻿// Builder Design Pattern
+﻿// Patrón de Diseño Builder - Ejemplo Pizzería
 //
-// Intent: Lets you construct complex objects step by step. The pattern allows
-// you to produce different types and representations of an object using the
-// same construction code.
+// Este ejemplo muestra cómo construir diferentes tipos de pizzas
+// paso a paso, permitiendo crear pizzas personalizadas o usar
+// recetas predefinidas a través del Director (chef).
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace RefactoringGuru.DesignPatterns.Builder.Conceptual
 {
-    // The Builder interface specifies methods for creating the different parts
-    // of the Product objects.
-    public interface IBuilder
+    // La interfaz Builder define los pasos para construir una pizza
+    public interface IConstructorPizza
     {
-        void BuildPartA();
-		
-        void BuildPartB();
-		
-        void BuildPartC();
+        void EstablecerTamaño(string tamaño);
+        void AgregarMasa(string tipoMasa);
+        void AgregarSalsa(string tipoSalsa);
+        void AgregarQueso(string tipoQueso);
+        void AgregarIngredientes(List<string> ingredientes);
+        void AgregarCoccion(string tipoCoccion);
     }
     
-    // The Concrete Builder classes follow the Builder interface and provide
-    // specific implementations of the building steps. Your program may have
-    // several variations of Builders, implemented differently.
-    public class ConcreteBuilder : IBuilder
+    // Concrete Builder - Implementa la construcción de pizzas
+    public class ConstructorPizzaPersonalizada : IConstructorPizza
     {
-        private Product _product = new Product();
+        private Pizza _pizza;
         
-        // A fresh builder instance should contain a blank product object, which
-        // is used in further assembly.
-        public ConcreteBuilder()
+        public ConstructorPizzaPersonalizada()
         {
-            this.Reset();
+            this.Reiniciar();
         }
         
-        public void Reset()
+        public void Reiniciar()
         {
-            this._product = new Product();
+            this._pizza = new Pizza();
         }
-		
-        // All production steps work with the same product instance.
-        public void BuildPartA()
+        
+        public void EstablecerTamaño(string tamaño)
         {
-            this._product.Add("PartA1");
+            this._pizza.Tamaño = tamaño;
         }
-		
-        public void BuildPartB()
+        
+        public void AgregarMasa(string tipoMasa)
         {
-            this._product.Add("PartB1");
+            this._pizza.TipoMasa = tipoMasa;
         }
-		
-        public void BuildPartC()
+        
+        public void AgregarSalsa(string tipoSalsa)
         {
-            this._product.Add("PartC1");
+            this._pizza.Salsa = tipoSalsa;
         }
-		
-        // Concrete Builders are supposed to provide their own methods for
-        // retrieving results. That's because various types of builders may
-        // create entirely different products that don't follow the same
-        // interface. Therefore, such methods cannot be declared in the base
-        // Builder interface (at least in a statically typed programming
-        // language).
-        //
-        // Usually, after returning the end result to the client, a builder
-        // instance is expected to be ready to start producing another product.
-        // That's why it's a usual practice to call the reset method at the end
-        // of the `GetProduct` method body. However, this behavior is not
-        // mandatory, and you can make your builders wait for an explicit reset
-        // call from the client code before disposing of the previous result.
-        public Product GetProduct()
+        
+        public void AgregarQueso(string tipoQueso)
         {
-            Product result = this._product;
-
-            this.Reset();
-
-            return result;
+            this._pizza.Queso = tipoQueso;
+        }
+        
+        public void AgregarIngredientes(List<string> ingredientes)
+        {
+            this._pizza.Ingredientes.AddRange(ingredientes);
+        }
+        
+        public void AgregarCoccion(string tipoCoccion)
+        {
+            this._pizza.TipoCoccion = tipoCoccion;
+        }
+        
+        // Devuelve la pizza construida y prepara el builder para una nueva pizza
+        public Pizza ObtenerPizza()
+        {
+            Pizza resultado = this._pizza;
+            this.Reiniciar();
+            return resultado;
         }
     }
     
-    // It makes sense to use the Builder pattern only when your products are
-    // quite complex and require extensive configuration.
-    //
-    // Unlike in other creational patterns, different concrete builders can
-    // produce unrelated products. In other words, results of various builders
-    // may not always follow the same interface.
-    public class Product
+    // El producto final - Pizza
+    public class Pizza
     {
-        private List<object> _parts = new List<object>();
-		
-        public void Add(string part)
+        public string Tamaño { get; set; }
+        public string TipoMasa { get; set; }
+        public string Salsa { get; set; }
+        public string Queso { get; set; }
+        public List<string> Ingredientes { get; set; }
+        public string TipoCoccion { get; set; }
+        
+        public Pizza()
         {
-            this._parts.Add(part);
+            Ingredientes = new List<string>();
         }
-		
-        public string ListParts()
+        
+        public string ObtenerDescripcion()
         {
-            string str = string.Empty;
-
-            for (int i = 0; i < this._parts.Count; i++)
+            var descripcion = new StringBuilder();
+            descripcion.AppendLine("=== PIZZA PREPARADA ===");
+            descripcion.AppendLine($"Tamaño: {Tamaño}");
+            descripcion.AppendLine($"Masa: {TipoMasa}");
+            descripcion.AppendLine($"Salsa: {Salsa}");
+            descripcion.AppendLine($"Queso: {Queso}");
+            
+            if (Ingredientes.Count > 0)
             {
-                str += this._parts[i] + ", ";
+                descripcion.AppendLine($"Ingredientes: {string.Join(", ", Ingredientes)}");
             }
-
-            str = str.Remove(str.Length - 2); // removing last ",c"
-
-            return "Product parts: " + str + "\n";
+            else
+            {
+                descripcion.AppendLine("Ingredientes: Ninguno");
+            }
+            
+            descripcion.AppendLine($"Cocción: {TipoCoccion}");
+            descripcion.AppendLine("=====================");
+            
+            return descripcion.ToString();
         }
     }
     
-    // The Director is only responsible for executing the building steps in a
-    // particular sequence. It is helpful when producing products according to a
-    // specific order or configuration. Strictly speaking, the Director class is
-    // optional, since the client can control builders directly.
-    public class Director
+    // El Director (Chef) - Conoce las recetas para construir pizzas específicas
+    public class Chef
     {
-        private IBuilder _builder;
+        private IConstructorPizza _constructor;
         
-        public IBuilder Builder
+        public IConstructorPizza Constructor
         {
-            set { _builder = value; } 
+            set { _constructor = value; }
         }
         
-        // The Director can construct several product variations using the same
-        // building steps.
-        public void BuildMinimalViableProduct()
+        // Receta para una Pizza Margarita clásica
+        public void ConstruirPizzaMargarita()
         {
-            this._builder.BuildPartA();
+            _constructor.EstablecerTamaño("Mediana");
+            _constructor.AgregarMasa("Delgada");
+            _constructor.AgregarSalsa("Salsa de tomate italiana");
+            _constructor.AgregarQueso("Mozzarella fresca");
+            _constructor.AgregarIngredientes(new List<string> { "Albahaca fresca", "Aceite de oliva" });
+            _constructor.AgregarCoccion("Horno de leña a 450°C");
         }
-		
-        public void BuildFullFeaturedProduct()
+        
+        // Receta para una Pizza Pepperoni
+        public void ConstruirPizzaPepperoni()
         {
-            this._builder.BuildPartA();
-            this._builder.BuildPartB();
-            this._builder.BuildPartC();
+            _constructor.EstablecerTamaño("Grande");
+            _constructor.AgregarMasa("Tradicional");
+            _constructor.AgregarSalsa("Salsa de tomate");
+            _constructor.AgregarQueso("Mozzarella");
+            _constructor.AgregarIngredientes(new List<string> { "Pepperoni", "Orégano" });
+            _constructor.AgregarCoccion("Horno convencional a 220°C");
+        }
+        
+        // Receta para una Pizza Vegetariana
+        public void ConstruirPizzaVegetariana()
+        {
+            _constructor.EstablecerTamaño("Grande");
+            _constructor.AgregarMasa("Integral");
+            _constructor.AgregarSalsa("Salsa de tomate con hierbas");
+            _constructor.AgregarQueso("Mozzarella light");
+            _constructor.AgregarIngredientes(new List<string> 
+            { 
+                "Pimientos", 
+                "Champiñones", 
+                "Cebolla", 
+                "Aceitunas", 
+                "Tomate cherry" 
+            });
+            _constructor.AgregarCoccion("Horno eléctrico a 200°C");
+        }
+        
+        // Receta para una Pizza Hawaiana
+        public void ConstruirPizzaHawaiana()
+        {
+            _constructor.EstablecerTamaño("Mediana");
+            _constructor.AgregarMasa("Tradicional");
+            _constructor.AgregarSalsa("Salsa de tomate");
+            _constructor.AgregarQueso("Mozzarella");
+            _constructor.AgregarIngredientes(new List<string> { "Jamón", "Piña" });
+            _constructor.AgregarCoccion("Horno convencional a 220°C");
         }
     }
 
@@ -140,27 +181,48 @@ namespace RefactoringGuru.DesignPatterns.Builder.Conceptual
     {
         static void Main(string[] args)
         {
-            // The client code creates a builder object, passes it to the
-            // director and then initiates the construction process. The end
-            // result is retrieved from the builder object.
-            var director = new Director();
-            var builder = new ConcreteBuilder();
-            director.Builder = builder;
+            // El cliente crea el chef y el constructor
+            var chef = new Chef();
+            var constructor = new ConstructorPizzaPersonalizada();
+            chef.Constructor = constructor;
             
-            Console.WriteLine("Standard basic product:");
-            director.BuildMinimalViableProduct();
-            Console.WriteLine(builder.GetProduct().ListParts());
-
-            Console.WriteLine("Standard full featured product:");
-            director.BuildFullFeaturedProduct();
-            Console.WriteLine(builder.GetProduct().ListParts());
-
-            // Remember, the Builder pattern can be used without a Director
-            // class.
-            Console.WriteLine("Custom product:");
-            builder.BuildPartA();
-            builder.BuildPartC();
-            Console.Write(builder.GetProduct().ListParts());
+            Console.WriteLine("*** PIZZERÍA DON BUILDER ***\n");
+            
+            // Usando el chef para crear pizzas con recetas predefinidas
+            Console.WriteLine("1. Pizza Margarita:");
+            chef.ConstruirPizzaMargarita();
+            Console.WriteLine(constructor.ObtenerPizza().ObtenerDescripcion());
+            
+            Console.WriteLine("2. Pizza Pepperoni:");
+            chef.ConstruirPizzaPepperoni();
+            Console.WriteLine(constructor.ObtenerPizza().ObtenerDescripcion());
+            
+            Console.WriteLine("3. Pizza Vegetariana:");
+            chef.ConstruirPizzaVegetariana();
+            Console.WriteLine(constructor.ObtenerPizza().ObtenerDescripcion());
+            
+            Console.WriteLine("4. Pizza Hawaiana:");
+            chef.ConstruirPizzaHawaiana();
+            Console.WriteLine(constructor.ObtenerPizza().ObtenerDescripcion());
+            
+            // El cliente también puede construir pizzas personalizadas sin el chef
+            Console.WriteLine("5. Pizza Personalizada del Cliente:");
+            constructor.EstablecerTamaño("Familiar");
+            constructor.AgregarMasa("Masa de cerveza");
+            constructor.AgregarSalsa("Salsa BBQ");
+            constructor.AgregarQueso("Mezcla de quesos");
+            constructor.AgregarIngredientes(new List<string> 
+            { 
+                "Pollo", 
+                "Tocino", 
+                "Cebolla morada", 
+                "Jalapeños" 
+            });
+            constructor.AgregarCoccion("Horno de piedra a 300°C");
+            Console.WriteLine(constructor.ObtenerPizza().ObtenerDescripcion());
+            
+            Console.WriteLine("\n¡Gracias por su visita!");
+            Console.ReadKey();
         }
     }
 }
